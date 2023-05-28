@@ -18,6 +18,7 @@ export const userCreateController = async (req: Request, res: Response) => {
             } else {
                 req.body.userId = uuidv4();
                 const user = new User(req.body);
+                console.log(user);
 
                 user.save();
                 const response: IResponse = {
@@ -114,6 +115,60 @@ export const userChatListController = async (
                 chatType: "individual",
             },
         ],
+    };
+
+    res.status(200).json(response);
+};
+
+export const userTaskListController = async (
+    req: Request,
+    res: Response
+): Promise<void> => {
+    const { userId } = req.query;
+    console.log(userId);
+
+    const response: IResponse = {
+        status: "success",
+        message: "chats fetched successfully",
+        data: [
+            {
+                taskId: "1",
+                taskName: "Meditation",
+                taskDescription:
+                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+                taskTime: "3 mins",
+                status: "PENDING",
+                image: 'assets/images/meditation.png'
+            },
+            {
+                taskId: "2",
+                taskName: "Breathing Exercises",
+                taskDescription:
+                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+                taskTime: "5 mins",
+                status: "PENDING",
+                image: 'assets/images/breathing.png'
+            },
+            {
+                taskId: "3",
+                taskName: "Reading",
+                taskDescription:
+                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+                taskTime: "10 mins",
+                status: "COMPLETED",
+                image: 'assets/images/reading.png'
+            },
+            {
+                taskId: "4",
+                taskName: "Physical Exercise",
+                taskDescription:
+                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+                taskTime: "15 mins",
+                status: "COMPLETED",
+                image: 'assets/images/exercise.png'
+            },
+        ],
+        date: "29/05/2023"
     };
 
     res.status(200).json(response);
