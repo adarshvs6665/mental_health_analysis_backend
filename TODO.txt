@@ -1,0 +1,49 @@
+login
+create user  // 
+get user // 
+
+409 code for duplicate data
+400 for failed reponse
+500 internal error
+
+basemodel 
+    id
+    imageUrl
+    name
+    price
+    review
+    star
+    value       !
+    quantity    !
+
+ordersModel
+    orderId
+    baseModel : model containing data
+
+cartModel 
+    baseModel : model containing data
+
+
+status :
+    pending to accept 
+    out for delivery 
+    delivered 
+
+
+    {
+  cartData: [
+    { cartId: 'b0c4af57-7961-438e-8604-5129f3613078', item: [Object] }
+  ],
+  position: {
+    longitude: 76.9619567,
+    latitude: 8.568625,
+    timestamp: 1684089421616,
+    accuracy: 6.829999923706055,
+    altitude: 0,
+    floor: null,
+    heading: 0,
+    speed: 0,
+    speed_accuracy: 0.5,
+    is_mocked: false
+  }
+}
