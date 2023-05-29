@@ -138,7 +138,7 @@ export const userTaskListController = async (
                     "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
                 taskTime: "3 mins",
                 status: "PENDING",
-                image: 'assets/images/meditation.png'
+                image: "assets/images/meditation.png",
             },
             {
                 taskId: "2",
@@ -147,7 +147,7 @@ export const userTaskListController = async (
                     "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
                 taskTime: "5 mins",
                 status: "PENDING",
-                image: 'assets/images/breathing.png'
+                image: "assets/images/breathing.png",
             },
             {
                 taskId: "3",
@@ -156,7 +156,7 @@ export const userTaskListController = async (
                     "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
                 taskTime: "10 mins",
                 status: "COMPLETED",
-                image: 'assets/images/reading.png'
+                image: "assets/images/reading.png",
             },
             {
                 taskId: "4",
@@ -165,27 +165,53 @@ export const userTaskListController = async (
                     "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
                 taskTime: "15 mins",
                 status: "COMPLETED",
-                image: 'assets/images/exercise.png'
+                image: "assets/images/exercise.png",
             },
         ],
-        date: "29/05/2023"
+        date: "29/05/2023",
     };
 
     res.status(200).json(response);
 };
 
-// {
-//     data: [
-//         {
-//             chatId: "ndfansdofijsd89fau9834iun",
-//             chatName: "Group Alpha",
-//             chatType: "group"
-//         },
-//         {
-//             chatId: "ndfansdofijsd89fausav4iun",
-//             chatName: "Doctor",
-//             chatType: "individual"
-//         },
+export const userFetchAnalysisQuestionsController = async (
+    req: Request,
+    res: Response
+): Promise<void> => {
+    
+    const response: IResponse = {
+        status: "success",
+        message: "chats fetched successfully",
+        data: 
 
-//     ]
-// }
+        [
+            {
+                id: 1,
+                question:
+                    "Flutter is an open-source UI software development kit created by ______",
+                options: ["Adarsh", "Google", "Facebook", "Microsoft"],
+            },
+            {
+                id: 2,
+                question: "When google release Flutter.",
+                options: ["Jun 2017", "Jun 2017", "May 2017", "May 2018"],
+                score: [10, 30, 20, 50]
+            },
+            {
+                id: 3,
+                question:
+                    "A memory location that holds a single letter or number.",
+                options: ["Double", "Int", "Char", "Word"],
+            },
+            {
+                id: 4,
+                question:
+                    "What command do you use to output data to the screen?",
+                options: ["Cin", "Count>>", "Cout", "Output>>"],
+            },
+        ],
+        date: "29/05/2023",
+    };
+
+    res.status(200).json(response);
+};
