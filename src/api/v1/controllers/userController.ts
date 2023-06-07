@@ -2,216 +2,235 @@ import { Request, Response } from "express";
 import User from "../models/User";
 import { IResponse } from "../Interfaces/IResponse";
 import { v4 as uuidv4 } from "uuid";
+import dotenv from "dotenv";
+import ChatList from "../models/ChatList";
+import Chat from "../models/Chat";
+
+dotenv.config();
 
 export const userCreateController = async (req: Request, res: Response) => {
-    const { email } = req.body;
+  const { email } = req.body;
 
-    // checks if user exists
-    User.findOne({ email: email })
-        .then((existingUser) => {
-            if (existingUser) {
-                const response: IResponse = {
-                    status: "failed",
-                    message: "Account already exists. Please login",
-                };
-                res.status(400).json(response);
-            } else {
-                req.body.userId = uuidv4();
-                const user = new User(req.body);
-                console.log(user);
+  // checks if user exists
+  User.findOne({ email: email })
+    .then((existingUser) => {
+      if (existingUser) {
+        const response: IResponse = {
+          status: "failed",
+          message: "Account already exists. Please login",
+        };
+        res.status(400).json(response);
+      } else {
+        req.body.userId = uuidv4();
+        const user = new User(req.body);
+        console.log(user);
 
-                user.save();
-                const response: IResponse = {
-                    status: "success",
-                    message: "Registration successful",
-                };
-                res.status(200).json(response);
-            }
-        })
-        .catch((err: any) => {
-            const response: IResponse = {
-                status: "failed",
-                message: "Registration failed",
-            };
-            res.status(404).json(response);
+        user.save();
+
+        const chatListForUserInit = new ChatList({
+          userId: req.body.userId,
+          chatId: process.env.GROUP_CHAT_ID,
+          chatType: 'group',
+          chatName: "Global Chat",
+          recepientId: "",
         });
+
+        chatListForUserInit.save();
+
+        const response: IResponse = {
+          status: "success",
+          message: "Registration successful",
+        };
+        res.status(200).json(response);
+      }
+    })
+    .catch((err: any) => {
+      const response: IResponse = {
+        status: "failed",
+        message: "Registration failed",
+      };
+      res.status(404).json(response);
+    });
 };
 
 export const userAuthenticateController = async (
-    req: Request,
-    res: Response
+  req: Request,
+  res: Response
 ): Promise<void> => {
-    const { email, password } = req.body;
-    console.log(email);
-    console.log(password);
-    console.log(req.body);
+  const { email, password } = req.body;
+  console.log(email);
+  console.log(password);
+  console.log(req.body);
 
-    try {
-        // Find the user by email
-        const user = await User.findOne({ email });
+  try {
+    // Find the user by email
+    const user = await User.findOne({ email });
 
-        // handling invalid credentials
-        if (!user) {
-            const response: IResponse = {
-                status: "failed",
-                message: "Invalid email or password",
-            };
-            res.status(401).json(response);
-        } else if (!user!.verifyPassword(password)) {
-            const response: IResponse = {
-                status: "failed",
-                message: "Invalid email or password",
-            };
-            res.status(401).json(response);
-        } else {
-            const { password, ...userWithoutPassword } = user.toObject();
+    // handling invalid credentials
+    if (!user) {
+      const response: IResponse = {
+        status: "failed",
+        message: "Invalid email or password",
+      };
+      res.status(401).json(response);
+    } else if (!user!.verifyPassword(password)) {
+      const response: IResponse = {
+        status: "failed",
+        message: "Invalid email or password",
+      };
+      res.status(401).json(response);
+    } else {
+      const { password, ...userWithoutPassword } = user.toObject();
 
-            const response: IResponse = {
-                status: "success",
-                message: "Login successful",
-                data: userWithoutPassword,
-            };
+      const response: IResponse = {
+        status: "success",
+        message: "Login successful",
+        data: userWithoutPassword,
+      };
 
-            // User is authenticated
-            res.status(200).json(response);
-        }
-    } catch (err) {
-        console.log(err);
-
-        // Handle any errors that occur during the authentication process
-        const response: IResponse = {
-            status: "failed",
-            message: "internal error",
-        };
-
-        res.status(500).json(response);
+      // User is authenticated
+      res.status(200).json(response);
     }
+  } catch (err) {
+    console.log(err);
+
+    // Handle any errors that occur during the authentication process
+    const response: IResponse = {
+      status: "failed",
+      message: "internal error",
+    };
+
+    res.status(500).json(response);
+  }
 };
 
 export const userChatListController = async (
-    req: Request,
-    res: Response
+  req: Request,
+  res: Response
 ): Promise<void> => {
-    const { userId } = req.query;
-    console.log(userId);
+  const { userId } = req.query;
+  console.log(userId);
 
-    const response: IResponse = {
-        status: "success",
-        message: "chats fetched successfully",
-        data: [
-            {
-                chatId: "ndfansdofijsd89fau9834iun",
-                chatName: "Group Alpha",
-                chatType: "group",
-            },
-            {
-                chatId: "ndfansdofijsd89fausav4iun",
-                chatName: "Doctor",
-                chatType: "individual",
-            },
-            {
-                chatId: "ndfansdofijsd89fausav4iun",
-                chatName: "Doctor",
-                chatType: "individual",
-            },
-        ],
-    };
+  const userChats = await ChatList.find({userId}).lean();
+  console.log(userChats);
+  
+  const response: IResponse = {
+    status: "success",
+    message: "chats fetched successfully",
+    data: userChats
+  };
 
-    res.status(200).json(response);
+  res.status(200).json(response);
 };
 
 export const userTaskListController = async (
-    req: Request,
-    res: Response
+  req: Request,
+  res: Response
 ): Promise<void> => {
-    const { userId } = req.query;
-    console.log(userId);
+  const { userId } = req.query;
+  console.log(userId);
 
-    const response: IResponse = {
-        status: "success",
-        message: "chats fetched successfully",
-        data: [
-            {
-                taskId: "1",
-                taskName: "Meditation",
-                taskDescription:
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-                taskTime: "3 mins",
-                status: "PENDING",
-                image: "assets/images/meditation.png",
-            },
-            {
-                taskId: "2",
-                taskName: "Breathing Exercises",
-                taskDescription:
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-                taskTime: "5 mins",
-                status: "PENDING",
-                image: "assets/images/breathing.png",
-            },
-            {
-                taskId: "3",
-                taskName: "Reading",
-                taskDescription:
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-                taskTime: "10 mins",
-                status: "COMPLETED",
-                image: "assets/images/reading.png",
-            },
-            {
-                taskId: "4",
-                taskName: "Physical Exercise",
-                taskDescription:
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-                taskTime: "15 mins",
-                status: "COMPLETED",
-                image: "assets/images/exercise.png",
-            },
-        ],
-        date: "29/05/2023",
-    };
+  const response: IResponse = {
+    status: "success",
+    message: "chats fetched successfully",
+    data: [
+      {
+        taskId: "1",
+        taskName: "Meditation",
+        taskDescription:
+          "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+        taskTime: "3 mins",
+        status: "PENDING",
+        image: "assets/images/meditation.png",
+      },
+      {
+        taskId: "2",
+        taskName: "Breathing Exercises",
+        taskDescription:
+          "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+        taskTime: "5 mins",
+        status: "PENDING",
+        image: "assets/images/breathing.png",
+      },
+      {
+        taskId: "3",
+        taskName: "Reading",
+        taskDescription:
+          "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+        taskTime: "10 mins",
+        status: "COMPLETED",
+        image: "assets/images/reading.png",
+      },
+      {
+        taskId: "4",
+        taskName: "Physical Exercise",
+        taskDescription:
+          "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+        taskTime: "15 mins",
+        status: "COMPLETED",
+        image: "assets/images/exercise.png",
+      },
+    ],
+    date: "29/05/2023",
+  };
 
-    res.status(200).json(response);
+  res.status(200).json(response);
 };
 
 export const userFetchAnalysisQuestionsController = async (
-    req: Request,
-    res: Response
+  req: Request,
+  res: Response
 ): Promise<void> => {
-    
-    const response: IResponse = {
-        status: "success",
-        message: "chats fetched successfully",
-        data: 
+  const response: IResponse = {
+    status: "success",
+    message: "chats fetched successfully",
+    data: [
+      {
+        id: 1,
+        question:
+          "Flutter is an open-source UI software development kit created by ______",
+        options: ["Adarsh", "Google", "Facebook", "Microsoft"],
+      },
+      {
+        id: 2,
+        question: "When google release Flutter.",
+        options: ["Jun 2017", "Jun 2017", "May 2017", "May 2018"],
+        score: [10, 30, 20, 50],
+      },
+      {
+        id: 3,
+        question: "A memory location that holds a single letter or number.",
+        options: ["Double", "Int", "Char", "Word"],
+      },
+      {
+        id: 4,
+        question: "What command do you use to output data to the screen?",
+        options: ["Cin", "Count>>", "Cout", "Output>>"],
+      },
+    ],
+    date: "29/05/2023",
+  };
 
-        [
-            {
-                id: 1,
-                question:
-                    "Flutter is an open-source UI software development kit created by ______",
-                options: ["Adarsh", "Google", "Facebook", "Microsoft"],
-            },
-            {
-                id: 2,
-                question: "When google release Flutter.",
-                options: ["Jun 2017", "Jun 2017", "May 2017", "May 2018"],
-                score: [10, 30, 20, 50]
-            },
-            {
-                id: 3,
-                question:
-                    "A memory location that holds a single letter or number.",
-                options: ["Double", "Int", "Char", "Word"],
-            },
-            {
-                id: 4,
-                question:
-                    "What command do you use to output data to the screen?",
-                options: ["Cin", "Count>>", "Cout", "Output>>"],
-            },
-        ],
-        date: "29/05/2023",
-    };
-
-    res.status(200).json(response);
+  res.status(200).json(response);
 };
+
+export const userfetchChatController = async (req: Request, res: Response) => {
+    const { chatId } = req.query;
+    if (!chatId) {
+      const response: IResponse = {
+        status: "failed",
+        message: "Insufficient information",
+      };
+      res.status(400).json(response);
+    } else {
+      const chat = await Chat.findOne({ chatId }).lean();
+  
+      const response: IResponse = {
+        status: "success",
+        message: "Login successful",
+        data: chat?.messages,
+      };
+  
+      res.status(200).json(response);
+    }
+  };
