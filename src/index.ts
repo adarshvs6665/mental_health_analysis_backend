@@ -54,7 +54,23 @@ io.on("connection", (socket) => {
 
   // Handle incoming individual chat messages
   socket.on("sendDoctorMessage", ({ chatId, message, userId, name }) => {
-    console.log(message);
+    const newMessage = {
+      message,
+      userId,
+      name,
+    };
+
+    Chat.findOneAndUpdate(
+      { chatId: chatId }, // Filter condition
+      { $push: { messages: newMessage } }, // Update operation
+      { upsert: true } // Options: create a new document if it doesn't exist
+    )
+      .then(() => {
+        console.log("Record updated or created successfully");
+      })
+      .catch((error) => {
+        console.error("Error updating or creating record:", error);
+      });
 
     // Emit the individual message to the recipient user only
     io.to(chatId).emit("newDoctorMessage", {
@@ -67,7 +83,7 @@ io.on("connection", (socket) => {
   // Handle incoming chat messages
   socket.on("sendGroupMessage", ({ chatId, message, userId, name }) => {
     console.log(chatId);
-    
+
     const newMessage = {
       message,
       userId,
@@ -75,7 +91,7 @@ io.on("connection", (socket) => {
     };
 
     console.log(newMessage);
-    
+
     Chat.findOneAndUpdate(
       { chatId: chatId }, // Filter condition
       { $push: { messages: newMessage } }, // Update operation

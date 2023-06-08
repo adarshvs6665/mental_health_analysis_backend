@@ -3,6 +3,7 @@ import Doctor from "../models/Doctor";
 import { IResponse } from "../Interfaces/IResponse";
 import { v4 as uuidv4 } from "uuid";
 import Chat from "../models/Chat";
+import ChatList from "../models/ChatList";
 
 export const doctorCreateController = async (req: Request, res: Response) => {
   const { email } = req.body;
@@ -99,30 +100,13 @@ export const doctorChatListController = async (
   res: Response
 ): Promise<void> => {
   const { doctorId } = req.query;
-  console.log(doctorId);
+  const doctorChats = await ChatList.find({ userId: doctorId }).lean();
 
   const response: IResponse = {
     status: "success",
     message: "chats fetched successfully",
-    data: [
-      {
-        chatId: "1",
-        chatName: "Group Alpha",
-        chatType: "group",
-      },
-      {
-        chatId: "2",
-        chatName: "Doctor",
-        chatType: "individual",
-      },
-      {
-        chatId: "3",
-        chatName: "Doctor",
-        chatType: "individual",
-      },
-    ],
+    data: doctorChats,
   };
-
   res.status(200).json(response);
 };
 

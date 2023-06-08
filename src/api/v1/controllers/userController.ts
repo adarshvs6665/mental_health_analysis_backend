@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import dotenv from "dotenv";
 import ChatList from "../models/ChatList";
 import Chat from "../models/Chat";
+import Doctor from "../models/Doctor";
 
 dotenv.config();
 
@@ -22,7 +23,7 @@ export const userCreateController = async (req: Request, res: Response) => {
         res.status(400).json(response);
       } else {
         req.body.userId = uuidv4();
-        const user = new User(req.body);
+        const user = new User({ ...req.body, subscription: false, score: -1 });
         console.log(user);
 
         user.save();
@@ -30,7 +31,7 @@ export const userCreateController = async (req: Request, res: Response) => {
         const chatListForUserInit = new ChatList({
           userId: req.body.userId,
           chatId: process.env.GROUP_CHAT_ID,
-          chatType: 'group',
+          chatType: "group",
           chatName: "Global Chat",
           recepientId: "",
         });
@@ -109,18 +110,65 @@ export const userChatListController = async (
   res: Response
 ): Promise<void> => {
   const { userId } = req.query;
-  console.log(userId);
 
-  const userChats = await ChatList.find({userId}).lean();
-  console.log(userChats);
-  
+  const userChats = await ChatList.find({ userId }).lean();
+
   const response: IResponse = {
     status: "success",
     message: "chats fetched successfully",
-    data: userChats
+    data: userChats,
   };
 
   res.status(200).json(response);
+};
+
+export const userAddDoctorsToChatController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { userId, doctors } = req.body;
+
+  if (!userId || !doctors) {
+    const response: IResponse = {
+      status: "failed",
+      message: "Insufficient information",
+    };
+    res.status(400).json(response);
+  } else {
+    const user = await User.findOne({ userId });
+
+    doctors.map(async (docId: string) => {
+      console.log(docId);
+      const chatId = uuidv4();
+      const doctor = await Doctor.findOne({ doctorId: docId });
+
+      const userToDoctorChat = new ChatList({
+        userId,
+        chatId,
+        chatType: "doctor",
+        chatName: doctor?.name,
+        recepientId: docId,
+      });
+
+      const doctorToUserChat = new ChatList({
+        userId: docId,
+        chatId,
+        chatType: "patient",
+        chatName: user?.name,
+        recepientId: userId,
+      });
+
+      userToDoctorChat.save();
+      doctorToUserChat.save();
+    });
+
+    const response: IResponse = {
+      status: "success",
+      message: "added doctor successfully",
+    };
+
+    res.status(200).json(response);
+  }
 };
 
 export const userTaskListController = async (
@@ -215,22 +263,76 @@ export const userFetchAnalysisQuestionsController = async (
 };
 
 export const userfetchChatController = async (req: Request, res: Response) => {
-    const { chatId } = req.query;
-    if (!chatId) {
-      const response: IResponse = {
-        status: "failed",
-        message: "Insufficient information",
-      };
-      res.status(400).json(response);
-    } else {
-      const chat = await Chat.findOne({ chatId }).lean();
-  
-      const response: IResponse = {
-        status: "success",
-        message: "Login successful",
-        data: chat?.messages,
-      };
-  
-      res.status(200).json(response);
-    }
-  };
+  const { chatId } = req.query;
+  if (!chatId) {
+    const response: IResponse = {
+      status: "failed",
+      message: "Insufficient information",
+    };
+    res.status(400).json(response);
+  } else {
+    const chat = await Chat.findOne({ chatId }).lean();
+    console.log(chat);
+
+    const response: IResponse = {
+      status: "success",
+      message: "Login successful",
+      data: chat ? chat.messages : [],
+    };
+
+    res.status(200).json(response);
+  }
+};
+
+export const userFetchDoctorsListController = async (
+  req: Request,
+  res: Response
+) => {
+  const { userId } = req.query;
+  console.log(userId);
+
+  if (!userId) {
+    const response: IResponse = {
+      status: "failed",
+      message: "Insufficient information",
+    };
+    res.status(400).json(response);
+  } else {
+    const doctors = await Doctor.find({}, { password: 0, __v: 0, _id: 0 });
+
+    const response: IResponse = {
+      status: "success",
+      message: "Fetched doctors successfully",
+      data: doctors,
+    };
+
+    res.status(200).json(response);
+  }
+};
+
+export const userSubscribeController = async (req: Request, res: Response) => {
+  console.log("hit");
+
+  const { userId } = req.body;
+
+  if (!userId) {
+    const response: IResponse = {
+      status: "failed",
+      message: "Insufficient information",
+    };
+    res.status(400).json(response);
+  } else {
+    const user = await User.findOneAndUpdate(
+      { userId },
+      { subscription: true }
+    );
+    const { password, ...userData } = user!.toObject();
+    const response: IResponse = {
+      status: "success",
+      message: "subscribed successfully",
+      data: userData,
+    };
+
+    res.status(200).json(response);
+  }
+};
