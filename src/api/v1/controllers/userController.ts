@@ -218,10 +218,14 @@ export const userFetchAnalysisQuestionsController = async (
   req: Request,
   res: Response
 ): Promise<void> => {
+  const questionsDataArray = await getRandomItemsFromArray(
+    questionsData,
+    questionsData.length
+  );
   const response: IResponse = {
     status: "success",
     message: "chats fetched successfully",
-    data: questionsData,
+    data: questionsDataArray,
   };
   // console.log(response);
 
@@ -308,10 +312,10 @@ export const userSubscribeController = async (req: Request, res: Response) => {
     };
     res.status(400).json(response);
   } else {
-    const user = await User.findOneAndUpdate(
-      { userId },
-      { subscription: true }
-    );
+    await User.findOneAndUpdate({ userId }, { subscription: true });
+    const user = await User.findOne({ userId }, { password: 0 });
+    console.log(user);
+
     const { password, ...userData } = user!.toObject();
     const response: IResponse = {
       status: "success",
