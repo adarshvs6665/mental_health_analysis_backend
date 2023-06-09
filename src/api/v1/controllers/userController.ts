@@ -6,6 +6,11 @@ import dotenv from "dotenv";
 import ChatList from "../models/ChatList";
 import Chat from "../models/Chat";
 import Doctor from "../models/Doctor";
+import { questionsData } from "../utils/data/questionsData";
+import { tasksData } from "../utils/data/tasksData";
+import { getRandomItemsFromArray } from "../utils/getRandomItemsFromArray";
+import TaskList from "../models/TaskList";
+import { formatDateAndSetToIST } from "../utils/formatDate";
 
 dotenv.config();
 
@@ -178,51 +183,22 @@ export const userTaskListController = async (
   const { userId } = req.query;
   console.log(userId);
 
-  const response: IResponse = {
-    status: "success",
-    message: "chats fetched successfully",
-    data: [
-      {
-        taskId: "1",
-        taskName: "Meditation",
-        taskDescription:
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-        taskTime: "3 mins",
-        status: "PENDING",
-        image: "assets/images/meditation.png",
-      },
-      {
-        taskId: "2",
-        taskName: "Breathing Exercises",
-        taskDescription:
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-        taskTime: "5 mins",
-        status: "PENDING",
-        image: "assets/images/breathing.png",
-      },
-      {
-        taskId: "3",
-        taskName: "Reading",
-        taskDescription:
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-        taskTime: "10 mins",
-        status: "COMPLETED",
-        image: "assets/images/reading.png",
-      },
-      {
-        taskId: "4",
-        taskName: "Physical Exercise",
-        taskDescription:
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-        taskTime: "15 mins",
-        status: "COMPLETED",
-        image: "assets/images/exercise.png",
-      },
-    ],
-    date: "29/05/2023",
-  };
+  if (!userId) {
+    const response: IResponse = {
+      status: "failed",
+      message: "Insufficient information",
+    };
+    res.status(400).json(response);
+  } else {
+    const taskList = await TaskList.findOne({ userId }, {_id: 0, __v: 0}).lean();
+    const response: IResponse = {
+      status: "success",
+      message: "chats fetched successfully",
+      data: taskList,
+    };
 
-  res.status(200).json(response);
+    res.status(200).json(response);
+  }
 };
 
 export const userFetchAnalysisQuestionsController = async (
@@ -232,32 +208,9 @@ export const userFetchAnalysisQuestionsController = async (
   const response: IResponse = {
     status: "success",
     message: "chats fetched successfully",
-    data: [
-      {
-        id: 1,
-        question:
-          "Flutter is an open-source UI software development kit created by ______",
-        options: ["Adarsh", "Google", "Facebook", "Microsoft"],
-      },
-      {
-        id: 2,
-        question: "When google release Flutter.",
-        options: ["Jun 2017", "Jun 2017", "May 2017", "May 2018"],
-        score: [10, 30, 20, 50],
-      },
-      {
-        id: 3,
-        question: "A memory location that holds a single letter or number.",
-        options: ["Double", "Int", "Char", "Word"],
-      },
-      {
-        id: 4,
-        question: "What command do you use to output data to the screen?",
-        options: ["Cin", "Count>>", "Cout", "Output>>"],
-      },
-    ],
-    date: "29/05/2023",
+    data: questionsData,
   };
+  // console.log(response);
 
   res.status(200).json(response);
 };
@@ -330,6 +283,46 @@ export const userSubscribeController = async (req: Request, res: Response) => {
     const response: IResponse = {
       status: "success",
       message: "subscribed successfully",
+      data: userData,
+    };
+
+    res.status(200).json(response);
+  }
+};
+
+export const userEvaluateAnalysisController = async (
+  req: Request,
+  res: Response
+) => {
+  console.log("hit");
+
+  const { userId, score } = req.body;
+  console.log(score);
+
+  if (!userId || !score) {
+    const response: IResponse = {
+      status: "failed",
+      message: "Insufficient information",
+    };
+    res.status(400).json(response);
+  } else {
+    const user = await User.findOneAndUpdate({ userId }, { score });
+    const { password, ...userData } = user!.toObject();
+
+    if (score < 81) {
+      const tasksArray = [...tasksData];
+      const randomTasks = await getRandomItemsFromArray(tasksArray, 5);
+      const date = await formatDateAndSetToIST(new Date());
+
+      await TaskList.findOneAndUpdate(
+        { userId },
+        { tasks: [...randomTasks], assignedDate: date },
+        { new: true, upsert: true }
+      );
+    }
+    const response: IResponse = {
+      status: "success",
+      message: "analysis completed",
       data: userData,
     };
 

@@ -1,5 +1,5 @@
 import express from "express";
-import { userAddDoctorsToChatController, userAuthenticateController, userChatListController, userCreateController, userFetchAnalysisQuestionsController, userFetchDoctorsListController, userSubscribeController, userTaskListController, userfetchChatController } from "../controllers/userController";
+import { userAddDoctorsToChatController, userAuthenticateController, userChatListController, userCreateController, userEvaluateAnalysisController, userFetchAnalysisQuestionsController, userFetchDoctorsListController, userSubscribeController, userTaskListController, userfetchChatController } from "../controllers/userController";
 
 
 // for routing user APIs
@@ -17,5 +17,5 @@ userRouter.get("/fetch-chat-messages", userfetchChatController);
 userRouter.get("/tasks", userTaskListController);
 userRouter.post("/subscribe", userSubscribeController);
 userRouter.get("/fetch-analysis-questions", userFetchAnalysisQuestionsController);
-
+userRouter.post("/evaluate-analysis", userEvaluateAnalysisController)
 

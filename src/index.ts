@@ -2,12 +2,14 @@ import express, { Express } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import { userRouter } from "./api/v1/routes/userRouter";
-import mongoose from "mongoose";
+import { v4 as uuidv4 } from "uuid";
 import { dbConnection } from "./api/v1/db/db";
 import http from "http";
 import socketIO, { Server } from "socket.io";
 import { doctorRouter } from "./api/v1/routes/doctorRouter";
 import Chat from "./api/v1/models/Chat";
+import { tasksData } from "./api/v1/utils/data/tasksData";
+import { formatDateAndSetToIST } from "./api/v1/utils/formatDate";
 
 //configure env variables
 dotenv.config();
@@ -28,8 +30,15 @@ app.use(
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/doctor", doctorRouter);
 
-app.get("/", (req, res) => {
-  res.send("Hello world");
+app.get("/",async (req, res) => {
+  const date = new Date();
+  const test = new Date("2023-06-10 11:38:51.785");
+  const date1= await formatDateAndSetToIST(date)
+  const date2 = await formatDateAndSetToIST(test)
+
+  console.log(date1 === date2);
+  
+  res.json({ date1, date2 });
 });
 
 const io = new Server(server);
