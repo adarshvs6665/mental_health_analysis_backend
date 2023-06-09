@@ -220,7 +220,7 @@ export const userFetchAnalysisQuestionsController = async (
 ): Promise<void> => {
   const questionsDataArray = await getRandomItemsFromArray(
     questionsData,
-    questionsData.length
+    process.env.QUESTION_COUNT || questionsData.length
   );
   const response: IResponse = {
     status: "success",
