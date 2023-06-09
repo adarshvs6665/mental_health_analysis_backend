@@ -195,7 +195,8 @@ export const userFetchTaskListController = async (
       { _id: 0, __v: 0 }
     ).lean();
     const today = formatDateAndSetToIST(new Date());
-    if (!(taskList?.assignedDate === today)) {
+    console.log(taskList);
+    if (taskList && !(taskList?.assignedDate === today)) {
       const tasksArray = [...tasksData];
       const randomTasks = await getRandomItemsFromArray(tasksArray, 5);
       taskList = await TaskList.findOneAndUpdate(
@@ -330,9 +331,8 @@ export const userEvaluateAnalysisController = async (
   res: Response
 ) => {
   const { userId, score } = req.body;
-  console.log(score);
 
-  if (!userId || !score) {
+  if (!userId || score == null || score == undefined) {
     const response: IResponse = {
       status: "failed",
       message: "Insufficient information",
@@ -347,18 +347,27 @@ export const userEvaluateAnalysisController = async (
       const randomTasks = await getRandomItemsFromArray(tasksArray, 5);
       const date = await formatDateAndSetToIST(new Date());
 
-      await TaskList.findOneAndUpdate(
-        { userId },
-        { tasks: [...randomTasks], assignedDate: date },
-        { new: true, upsert: true }
-      );
-    }
+      const taskList = await TaskList.findOne({ userId });
+      if (taskList) {
+        await TaskList.findOneAndUpdate(
+          { userId },
+          { tasks: [...randomTasks], assignedDate: date },
+          { new: true, upsert: true }
+        );
+      } else {
+        const taskListNew = await new TaskList({
+          userId,
+          tasks: [...randomTasks],
+          assignedDate: date,
+        });
+        taskListNew.save();
+      }
+    } 
     const response: IResponse = {
       status: "success",
       message: "analysis completed",
       data: userData,
     };
-
     res.status(200).json(response);
   }
 };
