@@ -227,8 +227,6 @@ export const userFetchAnalysisQuestionsController = async (
     message: "chats fetched successfully",
     data: questionsDataArray,
   };
-  // console.log(response);
-
   res.status(200).json(response);
 };
 
