@@ -9,7 +9,7 @@ import socketIO, { Server } from "socket.io";
 import { doctorRouter } from "./api/v1/routes/doctorRouter";
 import Chat from "./api/v1/models/Chat";
 import { tasksData } from "./api/v1/utils/data/tasksData";
-import { formatDateAndSetToIST } from "./api/v1/utils/formatDate";
+import { formatDateAndSetToIST } from "./api/v1/utils/formatDateAndSetToIST";
 
 //configure env variables
 dotenv.config();
@@ -30,14 +30,14 @@ app.use(
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/doctor", doctorRouter);
 
-app.get("/",async (req, res) => {
+app.get("/", async (req, res) => {
   const date = new Date();
   const test = new Date("2023-06-10 11:38:51.785");
-  const date1= await formatDateAndSetToIST(date)
-  const date2 = await formatDateAndSetToIST(test)
+  const date1 = await formatDateAndSetToIST(date);
+  const date2 = await formatDateAndSetToIST(test);
 
   console.log(date1 === date2);
-  
+
   res.json({ date1, date2 });
 });
 

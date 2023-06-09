@@ -10,6 +10,7 @@ import {
   userSubscribeController,
   userFetchTaskListController,
   userfetchChatController,
+  userCompleteTaskController,
 } from "../controllers/userController";
 
 // for routing user APIs
@@ -29,3 +30,4 @@ userRouter.get(
   userFetchAnalysisQuestionsController
 );
 userRouter.post("/evaluate-analysis", userEvaluateAnalysisController);
+userRouter.post("/complete-task", userCompleteTaskController);

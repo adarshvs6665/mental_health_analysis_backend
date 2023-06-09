@@ -10,7 +10,7 @@ import { questionsData } from "../utils/data/questionsData";
 import { tasksData } from "../utils/data/tasksData";
 import { getRandomItemsFromArray } from "../utils/getRandomItemsFromArray";
 import TaskList from "../models/TaskList";
-import { formatDateAndSetToIST } from "../utils/formatDate";
+import { formatDateAndSetToIST } from "../utils/formatDateAndSetToIST";
 
 dotenv.config();
 
@@ -190,7 +190,20 @@ export const userFetchTaskListController = async (
     };
     res.status(400).json(response);
   } else {
-    const taskList = await TaskList.findOne({ userId }, {_id: 0, __v: 0}).lean();
+    let taskList = await TaskList.findOne(
+      { userId },
+      { _id: 0, __v: 0 }
+    ).lean();
+    const today = formatDateAndSetToIST(new Date());
+    if (!(taskList?.assignedDate === today)) {
+      const tasksArray = [...tasksData];
+      const randomTasks = await getRandomItemsFromArray(tasksArray, 5);
+      taskList = await TaskList.findOneAndUpdate(
+        { userId },
+        { tasks: [...randomTasks], assignedDate: today },
+        { new: true, upsert: true }
+      );
+    }
     const response: IResponse = {
       status: "success",
       message: "chats fetched successfully",
@@ -264,8 +277,6 @@ export const userFetchDoctorsListController = async (
 };
 
 export const userSubscribeController = async (req: Request, res: Response) => {
-  console.log("hit");
-
   const { userId } = req.body;
 
   if (!userId) {
@@ -294,8 +305,6 @@ export const userEvaluateAnalysisController = async (
   req: Request,
   res: Response
 ) => {
-  console.log("hit");
-
   const { userId, score } = req.body;
   console.log(score);
 
@@ -327,5 +336,42 @@ export const userEvaluateAnalysisController = async (
     };
 
     res.status(200).json(response);
+  }
+};
+
+export const userCompleteTaskController = async (
+  req: Request,
+  res: Response
+) => {
+  const { userId, taskId } = req.body;
+  console.log("hit");
+
+  if (!userId || !taskId) {
+    const response: IResponse = {
+      status: "failed",
+      message: "Insufficient information",
+    };
+    res.status(400).json(response);
+  } else {
+    await TaskList.updateOne(
+      { userId: userId, "tasks.taskId": taskId },
+      { $set: { "tasks.$.status": "COMPLETED" } }
+    )
+      .then(() => {
+        const response: IResponse = {
+          status: "success",
+          message: "updated task successfully",
+        };
+
+        res.status(200).json(response);
+      })
+      .catch(() => {
+        const response: IResponse = {
+          status: "failed",
+          message: "internal error",
+        };
+
+        res.status(500).json(response);
+      });
   }
 };
