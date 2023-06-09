@@ -255,7 +255,7 @@ export const userFetchDoctorsListController = async (
   res: Response
 ) => {
   const { userId } = req.query;
-  console.log(userId);
+  // console.log(userId);
 
   if (!userId) {
     const response: IResponse = {
@@ -265,11 +265,33 @@ export const userFetchDoctorsListController = async (
     res.status(400).json(response);
   } else {
     const doctors = await Doctor.find({}, { password: 0, __v: 0, _id: 0 });
+    const userChats = await ChatList.find({
+      userId,
+      chatType: "doctor",
+    }).lean();
+    const existingDoctorChatsIds = await Promise.all(
+      userChats.map((chat) => {
+        return chat.recepientId;
+      })
+    );
+    console.log(existingDoctorChatsIds);
+
+    const doctorsList = await Promise.all(
+      doctors.map((doc) => {
+        if (!existingDoctorChatsIds.includes(doc.doctorId)) {
+          return doc;
+        } else return null;
+      })
+    );
+
+    const filteredDoctorsList = doctorsList.filter((doc) => {
+      if (doc !== null) return doc;
+    });
 
     const response: IResponse = {
       status: "success",
       message: "Fetched doctors successfully",
-      data: doctors,
+      data: filteredDoctorsList,
     };
 
     res.status(200).json(response);
