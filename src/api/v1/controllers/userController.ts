@@ -176,7 +176,7 @@ export const userAddDoctorsToChatController = async (
   }
 };
 
-export const userTaskListController = async (
+export const userFetchTaskListController = async (
   req: Request,
   res: Response
 ): Promise<void> => {
