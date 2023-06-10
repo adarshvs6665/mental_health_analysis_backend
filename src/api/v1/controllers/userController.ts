@@ -365,6 +365,11 @@ export const userEvaluateAnalysisController = async (
         });
         taskListNew.save();
       }
+    } else {
+      const taskList = await TaskList.findOne({ userId });
+      if (taskList) {
+        await TaskList.deleteOne({ userId });
+      }
     }
     const response: IResponse = {
       status: "success",
