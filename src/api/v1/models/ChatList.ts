@@ -5,7 +5,8 @@ interface IChatList extends Document {
   chatId: String;
   chatType: String;
   chatName: String;
-  recepientId: String;
+  recipientId: String;
+  recipientPhone: String;
 }
 
 const ChatListSchema: Schema<IChatList> = new mongoose.Schema({
@@ -13,7 +14,8 @@ const ChatListSchema: Schema<IChatList> = new mongoose.Schema({
   chatId: String,
   chatType: String,
   chatName: String,
-  recepientId: String,
+  recipientId: String,
+  recipientPhone: String,
 });
 
 const ChatList: Model<IChatList> = mongoose.model<IChatList>(

@@ -3,7 +3,8 @@ import {
   doctorAuthenticateController,
   doctorChatListController,
   doctorCreateController,
-  fetchChatController,
+  doctorFetchUserProfileController,
+  doctorfetchChatController,
 } from "../controllers/doctorController";
 import Chat from "../models/Chat";
 
@@ -14,4 +15,6 @@ export const doctorRouter = express.Router();
 doctorRouter.post("/register", doctorCreateController);
 doctorRouter.post("/login", doctorAuthenticateController);
 doctorRouter.get("/chats", doctorChatListController);
-doctorRouter.get("/fetch-chat-messages", fetchChatController);
+doctorRouter.get("/fetch-chat-messages", doctorfetchChatController);
+doctorRouter.get("/fetch-user-profile", doctorFetchUserProfileController);
+

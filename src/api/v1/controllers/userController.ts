@@ -38,7 +38,8 @@ export const userCreateController = async (req: Request, res: Response) => {
           chatId: process.env.GROUP_CHAT_ID,
           chatType: "group",
           chatName: "Global Chat",
-          recepientId: "",
+          recipientId: "",
+          recipientPhone: "",
         });
 
         chatListForUserInit.save();
@@ -152,7 +153,8 @@ export const userAddDoctorsToChatController = async (
         chatId,
         chatType: "doctor",
         chatName: doctor?.name,
-        recepientId: docId,
+        recipientId: docId,
+        recipientPhone: doctor!.mobile,
       });
 
       const doctorToUserChat = new ChatList({
@@ -160,7 +162,8 @@ export const userAddDoctorsToChatController = async (
         chatId,
         chatType: "patient",
         chatName: user?.name,
-        recepientId: userId,
+        recipientId: userId,
+        recipientPhone: user!.mobile,
       });
 
       userToDoctorChat.save();
@@ -231,7 +234,7 @@ export const userFetchAnalysisQuestionsController = async (
   res.status(200).json(response);
 };
 
-export const userfetchChatController = async (req: Request, res: Response) => {
+export const userFetchChatController = async (req: Request, res: Response) => {
   const { chatId } = req.query;
   if (!chatId) {
     const response: IResponse = {
@@ -274,7 +277,7 @@ export const userFetchDoctorsListController = async (
     }).lean();
     const existingDoctorChatsIds = await Promise.all(
       userChats.map((chat) => {
-        return chat.recepientId;
+        return chat.recipientId;
       })
     );
     console.log(existingDoctorChatsIds);
@@ -362,7 +365,7 @@ export const userEvaluateAnalysisController = async (
         });
         taskListNew.save();
       }
-    } 
+    }
     const response: IResponse = {
       status: "success",
       message: "analysis completed",

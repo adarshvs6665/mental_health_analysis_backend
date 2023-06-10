@@ -4,6 +4,8 @@ import { IResponse } from "../Interfaces/IResponse";
 import { v4 as uuidv4 } from "uuid";
 import Chat from "../models/Chat";
 import ChatList from "../models/ChatList";
+import User from "../models/User";
+import TaskList from "../models/TaskList";
 
 export const doctorCreateController = async (req: Request, res: Response) => {
   const { email } = req.body;
@@ -110,7 +112,10 @@ export const doctorChatListController = async (
   res.status(200).json(response);
 };
 
-export const fetchChatController = async (req: Request, res: Response) => {
+export const doctorfetchChatController = async (
+  req: Request,
+  res: Response
+) => {
   const { chatId } = req.query;
   if (!chatId) {
     const response: IResponse = {
@@ -123,8 +128,52 @@ export const fetchChatController = async (req: Request, res: Response) => {
 
     const response: IResponse = {
       status: "success",
-      message: "Login successful",
+      message: "Chats fetched successful",
       data: chat?.messages,
+    };
+
+    res.status(200).json(response);
+  }
+};
+
+export const doctorFetchUserProfileController = async (
+  req: Request,
+  res: Response
+) => {
+  const { userId } = req.query;
+  if (!userId) {
+    const response: IResponse = {
+      status: "failed",
+      message: "Insufficient information",
+    };
+    res.status(400).json(response);
+  } else {
+    const user = await User.findOne(
+      { userId },
+      { password: 0, _id: 0, subscription: 0, __v: 0 }
+    ).lean();
+    const userTasks = await TaskList.findOne(
+      { userId },
+      { "tasks.taskName": true }
+    ).lean();
+    console.log(userTasks);
+    const tasksArr = userTasks?.tasks;
+    let tasksListDescription = "";
+    tasksArr?.map((task) => {
+      tasksListDescription += '"' + task.taskName + '"' + ", ";
+    });
+    if (tasksListDescription == "") {
+      tasksListDescription = "Nothing assigned yet";
+    } else {
+      tasksListDescription =
+        tasksListDescription.substring(0, tasksListDescription.length - 2) +
+        " etc...";
+    }
+
+    const response: IResponse = {
+      status: "success",
+      message: "Login successful",
+      data: { ...user, tasks: tasksListDescription },
     };
 
     res.status(200).json(response);

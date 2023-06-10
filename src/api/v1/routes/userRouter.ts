@@ -9,7 +9,7 @@ import {
   userFetchDoctorsListController,
   userSubscribeController,
   userFetchTaskListController,
-  userfetchChatController,
+  userFetchChatController,
   userCompleteTaskController,
 } from "../controllers/userController";
 
@@ -22,7 +22,7 @@ userRouter.post("/login", userAuthenticateController);
 userRouter.get("/chats", userChatListController);
 userRouter.get("/doctors", userFetchDoctorsListController);
 userRouter.post("/add-doctors", userAddDoctorsToChatController);
-userRouter.get("/fetch-chat-messages", userfetchChatController);
+userRouter.get("/fetch-chat-messages", userFetchChatController);
 userRouter.get("/tasks", userFetchTaskListController);
 userRouter.post("/subscribe", userSubscribeController);
 userRouter.get(
